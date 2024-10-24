@@ -11,6 +11,7 @@ if (isset($_POST['toggle_sidebar'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
+// esooooooooooo
 
 // Determinar el estado actual del sidebar
 $sidebarClass = isset($_SESSION['sidebar_collapsed']) && $_SESSION['sidebar_collapsed'] ? 'collapsed' : '';
@@ -220,5 +221,6 @@ $conn->close();
         });
     });
     </script>
+
 </body>
 </html>
