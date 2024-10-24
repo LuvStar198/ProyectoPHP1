@@ -1,0 +1,141 @@
+/* Estilos para el Panel de Comprador */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f8ea;
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #4a7c59;
+    color: white;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    transition: left 0.3s ease;
+}
+
+.sidebar.collapsed {
+    left: -250px;
+}
+
+.sidebar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid #5d8b6a;
+}
+
+.sidebar-menu {
+    padding: 1rem 0;
+}
+
+.sidebar-menu a {
+    display: block;
+    padding: 0.8rem 1rem;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.sidebar-menu a:hover {
+    background-color: #5d8b6a;
+}
+
+.main-content {
+    flex-grow: 1;
+    margin-left: 250px;
+    padding: 2rem;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 0;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.footer {
+    background-color: #4a7c59;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: auto;
+    width: 100%;
+}
+
+#sidebarToggle {
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    z-index: 1000;
+    background-color: #4a7c59;
+    border: none;
+}
+
+#sidebarToggle:hover {
+    background-color: #5d8b6a;
+}
+
+/* Estilos adicionales para mejorar la apariencia */
+
+h2 {
+    color: #4a7c59;
+    margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+    background-color: #4a7c59;
+    border-color: #4a7c59;
+}
+
+.btn-primary:hover {
+    background-color: #5d8b6a;
+    border-color: #5d8b6a;
+}
+
+.btn-outline-light {
+    border-color: #ffffff;
+}
+
+.btn-outline-light:hover {
+    background-color: #ffffff;
+    color: #4a7c59;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    #sidebarToggle {
+        display: none;
+    }
+}

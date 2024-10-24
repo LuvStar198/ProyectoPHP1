@@ -1,0 +1,607 @@
+[2024-10-22 23:26:19] Request received
+Array
+(
+    [REQUEST_METHOD] => GET
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/productos.php
+    [CONTENT_TYPE] => none
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => 
+)
+
+[2024-10-22 23:26:19] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Cache-Control] => max-age=0
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [sec-ch-ua-mobile] => ?0
+    [sec-ch-ua-platform] => "Windows"
+    [Upgrade-Insecure-Requests] => 1
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => navigate
+    [Sec-Fetch-User] => ?1
+    [Sec-Fetch-Dest] => document
+    [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:26:19] Method detected
+GET
+[2024-10-22 23:26:19] Invalid method
+Array
+(
+    [expected] => POST
+    [received] => GET
+)
+
+[2024-10-22 23:27:17] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => application/json
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => {"product_id":123,"cantidad":1}
+)
+
+[2024-10-22 23:27:17] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 31
+    [sec-ch-ua-platform] => "Windows"
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => application/json
+    [sec-ch-ua-mobile] => ?0
+    [Accept] => */*
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:17] Method detected
+POST
+[2024-10-22 23:27:17] Processed input
+Array
+(
+    [product_id] => 123
+    [cantidad] => 1
+)
+
+[2024-10-22 23:27:17] Database connection successful
+[2024-10-22 23:27:17] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => application/x-www-form-urlencoded; charset=UTF-8
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+            [product_id] => 123
+            [cantidad] => 1
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => product_id=123&cantidad=1
+)
+
+[2024-10-22 23:27:17] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 25
+    [sec-ch-ua-platform] => "Windows"
+    [X-Requested-With] => XMLHttpRequest
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [Accept] => */*
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => application/x-www-form-urlencoded; charset=UTF-8
+    [sec-ch-ua-mobile] => ?0
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:17] Method detected
+POST
+[2024-10-22 23:27:17] Processed input
+Array
+(
+    [product_id] => 123
+    [cantidad] => 1
+)
+
+[2024-10-22 23:27:17] Database connection successful
+[2024-10-22 23:27:17] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => multipart/form-data; boundary=----WebKitFormBoundaryRRYGHVBK5OEmuoqp
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+            [product_id] => 123
+            [cantidad] => 1
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => 
+)
+
+[2024-10-22 23:27:17] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 240
+    [sec-ch-ua-platform] => "Windows"
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => multipart/form-data; boundary=----WebKitFormBoundaryRRYGHVBK5OEmuoqp
+    [sec-ch-ua-mobile] => ?0
+    [Accept] => */*
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:17] Method detected
+POST
+[2024-10-22 23:27:17] Processed input
+Array
+(
+)
+
+[2024-10-22 23:27:17] No product_id found
+Array
+(
+)
+
+[2024-10-22 23:27:19] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => multipart/form-data; boundary=----WebKitFormBoundaryA9STczKYwhHKIUbu
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+            [product_id] => 4
+            [cantidad] => 1
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => 
+)
+
+[2024-10-22 23:27:19] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 238
+    [sec-ch-ua-platform] => "Windows"
+    [X-Requested-With] => XMLHttpRequest
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [Accept] => application/json, text/javascript, */*; q=0.01
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => multipart/form-data; boundary=----WebKitFormBoundaryA9STczKYwhHKIUbu
+    [sec-ch-ua-mobile] => ?0
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:19] Method detected
+POST
+[2024-10-22 23:27:19] Processed input
+Array
+(
+)
+
+[2024-10-22 23:27:19] No product_id found
+Array
+(
+)
+
+[2024-10-22 23:27:26] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => multipart/form-data; boundary=----WebKitFormBoundaryXBlNKvABmGKjxgU3
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+            [product_id] => 3
+            [cantidad] => 1
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => 
+)
+
+[2024-10-22 23:27:26] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 238
+    [sec-ch-ua-platform] => "Windows"
+    [X-Requested-With] => XMLHttpRequest
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [Accept] => application/json, text/javascript, */*; q=0.01
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => multipart/form-data; boundary=----WebKitFormBoundaryXBlNKvABmGKjxgU3
+    [sec-ch-ua-mobile] => ?0
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:26] Method detected
+POST
+[2024-10-22 23:27:26] Processed input
+Array
+(
+)
+
+[2024-10-22 23:27:26] No product_id found
+Array
+(
+)
+
+[2024-10-22 23:27:27] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => multipart/form-data; boundary=----WebKitFormBoundaryFyGrwbiFBpLZrhOm
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+            [product_id] => 5
+            [cantidad] => 1
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => 
+)
+
+[2024-10-22 23:27:27] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 238
+    [sec-ch-ua-platform] => "Windows"
+    [X-Requested-With] => XMLHttpRequest
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [Accept] => application/json, text/javascript, */*; q=0.01
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => multipart/form-data; boundary=----WebKitFormBoundaryFyGrwbiFBpLZrhOm
+    [sec-ch-ua-mobile] => ?0
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:27] Method detected
+POST
+[2024-10-22 23:27:27] Processed input
+Array
+(
+)
+
+[2024-10-22 23:27:27] No product_id found
+Array
+(
+)
+
+[2024-10-22 23:27:32] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => multipart/form-data; boundary=----WebKitFormBoundaryzIy8sQATTi8Qxg8f
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+            [product_id] => 2
+            [cantidad] => 1
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => 
+)
+
+[2024-10-22 23:27:32] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 238
+    [sec-ch-ua-platform] => "Windows"
+    [X-Requested-With] => XMLHttpRequest
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [Accept] => application/json, text/javascript, */*; q=0.01
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => multipart/form-data; boundary=----WebKitFormBoundaryzIy8sQATTi8Qxg8f
+    [sec-ch-ua-mobile] => ?0
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:32] Method detected
+POST
+[2024-10-22 23:27:32] Processed input
+Array
+(
+)
+
+[2024-10-22 23:27:32] No product_id found
+Array
+(
+)
+
+[2024-10-22 23:27:33] Request received
+Array
+(
+    [REQUEST_METHOD] => POST
+    [QUERY_STRING] => 
+    [REQUEST_URI] => /ProyectoPHP/agregar_carrito.php
+    [CONTENT_TYPE] => multipart/form-data; boundary=----WebKitFormBoundaryVMIaMQckKkcsdsmG
+    [HTTP_CONTENT_TYPE] => none
+    [POST] => Array
+        (
+            [product_id] => 1
+            [cantidad] => 1
+        )
+
+    [GET] => Array
+        (
+        )
+
+    [RAW] => 
+)
+
+[2024-10-22 23:27:33] Headers received
+Array
+(
+    [Host] => localhost
+    [Connection] => keep-alive
+    [Content-Length] => 238
+    [sec-ch-ua-platform] => "Windows"
+    [X-Requested-With] => XMLHttpRequest
+    [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+    [Accept] => application/json, text/javascript, */*; q=0.01
+    [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+    [Content-Type] => multipart/form-data; boundary=----WebKitFormBoundaryVMIaMQckKkcsdsmG
+    [sec-ch-ua-mobile] => ?0
+    [Sec-GPC] => 1
+    [Accept-Language] => es-ES,es
+    [Origin] => http://localhost
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => cors
+    [Sec-Fetch-Dest] => empty
+    [Referer] => http://localhost/ProyectoPHP/productos.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+)
+
+[2024-10-22 23:27:33] Method detected
+POST
+[2024-10-22 23:27:33] Processed input
+Array
+(
+)
+
+[2024-10-22 23:27:33] No product_id found
+Array
+(
+)
+
+2024-10-23 03:03:49 - Error en agregar_carrito.php
+Array
+(
+    [error] => Producto no encontrado
+    [trace] => #0 {main}
+)
+
+--------------------------------------------------
+2024-10-23 03:03:49 - Error en agregar_carrito.php
+Array
+(
+    [error] => Producto no encontrado
+    [trace] => #0 {main}
+)
+
+--------------------------------------------------
+2024-10-23 03:03:49 - Error en agregar_carrito.php
+Array
+(
+    [error] => Producto no encontrado
+    [trace] => #0 {main}
+)
+
+--------------------------------------------------
+2024-10-23 03:07:56 - Received request
+Data: Array
+(
+    [product_id] => 1
+    [quantity] => 1
+)
+
+Session: Array
+(
+    [user_id] => 3
+    [user_name] => test
+    [user_role] => 1
+)
+
+POST: Array
+(
+    [product_id] => 1
+    [cantidad] => 1
+)
+
+--------------------------------------------------
+2024-10-23 03:07:59 - Received request
+Data: Array
+(
+    [product_id] => 1
+    [quantity] => 1
+)
+
+Session: Array
+(
+    [user_id] => 3
+    [user_name] => test
+    [user_role] => 1
+)
+
+POST: Array
+(
+    [product_id] => 1
+    [cantidad] => 1
+)
+
+--------------------------------------------------
+2024-10-23 03:08:10 - Received request
+Data: Array
+(
+    [product_id] => 2
+    [quantity] => 1
+)
+
+Session: Array
+(
+    [user_id] => 3
+    [user_name] => test
+    [user_role] => 1
+)
+
+POST: Array
+(
+    [product_id] => 2
+    [cantidad] => 1
+)
+
+--------------------------------------------------
+2024-10-23 03:08:12 - Received request
+Data: Array
+(
+    [product_id] => 4
+    [quantity] => 1
+)
+
+Session: Array
+(
+    [user_id] => 3
+    [user_name] => test
+    [user_role] => 1
+)
+
+POST: Array
+(
+    [product_id] => 4
+    [cantidad] => 1
+)
+
+--------------------------------------------------

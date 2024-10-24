@@ -1,0 +1,454 @@
+[2024-10-22 23:24:59] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:24:59] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:00] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:00] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:00] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:00] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:00] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:00] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:01] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:01] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:01] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:01] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:01] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:01] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:01] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:01] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+[2024-10-22 23:25:01] Incoming request
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [headers] => Array
+        (
+            [Host] => localhost
+            [Connection] => keep-alive
+            [Cache-Control] => max-age=0
+            [sec-ch-ua] => "Chromium";v="130", "Brave";v="130", "Not?A_Brand";v="99"
+            [sec-ch-ua-mobile] => ?0
+            [sec-ch-ua-platform] => "Windows"
+            [Upgrade-Insecure-Requests] => 1
+            [User-Agent] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
+            [Sec-GPC] => 1
+            [Accept-Language] => es-ES,es
+            [Sec-Fetch-Site] => same-origin
+            [Sec-Fetch-Mode] => navigate
+            [Sec-Fetch-User] => ?1
+            [Sec-Fetch-Dest] => document
+            [Referer] => http://localhost/ProyectoPHP/panel_comprador.php
+            [Accept-Encoding] => gzip, deflate, br, zstd
+            [Cookie] => PHPSESSID=81m2i239kbbd6iirt06djq7on5
+        )
+
+    [request_method] => GET
+    [raw_input] => 
+)
+
+[2024-10-22 23:25:01] Invalid request method detected
+REQUEST_METHOD: GET
+CONTENT_TYPE: 
+POST: Array
+(
+)
+
+Additional Data: Array
+(
+    [method] => GET
+)
+
+2024-10-23 03:09:44 - Iniciando addToCart
+User ID: 3
+Data: Array
+(
+    [product_id] => 4
+    [quantity] => 1
+)
+
+Session: Array
+(
+    [user_id] => 3
+    [user_name] => test
+    [user_role] => 1
+)
+
+--------------------------------------------------
+2024-10-23 03:09:44 - Error en addToCart
+User ID: 3
+Data: Array
+(
+    [error] => Error preparando la consulta del carrito
+)
+
+Session: Array
+(
+    [user_id] => 3
+    [user_name] => test
+    [user_role] => 1
+)
+
+--------------------------------------------------
