@@ -93,42 +93,28 @@ error_log("Número de productos encontrados: " . $result_products->num_rows);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
+            case 'add_to_cart':
+                if (isset($_POST['product_id'], $_POST['quantity'])) {
+                    $product_id = $_POST['product_id'];
+                    $quantity = $_POST['quantity'];
+                    
+                    $cartHandler = new CartHandler($conn, $user_id, $product_id, $quantity);
+                    $result = $cartHandler->addToCart($product_id, $quantity);
+                    echo json_encode($result);
+                    exit;
+                }
+                break;
             case 'update_quantity':
                 if (isset($_POST['product_id'], $_POST['quantity'])) {
                     $product_id = $_POST['product_id'];
                     $quantity = $_POST['quantity'];
                     
-                    // Verificar stock disponible
-                    $check_stock = "SELECT Cantidad FROM Producto WHERE ID_Producto = ?";
-                    $stmt_stock = $conn->prepare($check_stock);
-                    $stmt_stock->bind_param("i", $product_id);
-                    $stmt_stock->execute();
-                    $stock_result = $stmt_stock->get_result();
-                    $available_stock = $stock_result->fetch_assoc()['Cantidad'];
-                    
-                    if ($quantity > $available_stock) {
-                        echo json_encode([
-                            'success' => false,
-                            'message' => 'La cantidad solicitada excede el stock disponible'
-                        ]);
-                        exit;
-                    }
-                    
-                    $update_sql = "UPDATE Carrito_Producto 
-                                 SET cantidad = ?, fecha_agregado = NOW() 
-                                 WHERE ID_Carrito = ? AND ID_Producto = ?";
-                    $update_stmt = $conn->prepare($update_sql);
-                    $update_stmt->bind_param("iii", $quantity, $cart_id, $product_id);
-                    
-                    $response = array(
-                        'success' => $update_stmt->execute(),
-                        'message' => $update_stmt->error ? $update_stmt->error : 'Cantidad actualizada'
-                    );
-                    echo json_encode($response);
+                    $cartHandler = new CartHandler($conn, $user_id, $product_id, $quantity);
+                    $result = $cartHandler->updateProductQuantity($product_id, $quantity, $cart_id);
+                    echo json_encode($result);
                     exit;
                 }
                 break;
-                
             case 'remove_product':
                 if (isset($_POST['product_id'])) {
                     $product_id = $_POST['product_id'];
@@ -149,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="es">

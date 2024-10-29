@@ -45,14 +45,18 @@ class CartException extends Exception {}
 class CartHandler {
     private $conn;
     private $user_id;
-    
-    public function __construct($conn, $user_id) {
+    private $product_id;
+    private $quantity;
+
+    public function __construct($conn, $user_id, $product_id = null, $quantity = null) {
         if (!$conn) {
             $this->logError("Database connection failed");
             throw new CartException("Error de conexión a la base de datos");
         }
         $this->conn = $conn;
         $this->user_id = $user_id;
+        $this->product_id = $product_id;
+        $this->quantity = $quantity;
         
         // Verificar la conexión inmediatamente
         if ($this->conn->connect_error) {
@@ -61,8 +65,6 @@ class CartHandler {
         }
     }
 
-    
-    
     private function logError($message, $data = null) {
         $log_entry = "[ERROR] " . date('Y-m-d H:i:s') . " - " . $message . "\n";
         $log_entry .= "User ID: " . $this->user_id . "\n";
@@ -74,58 +76,48 @@ class CartHandler {
         
         error_log($log_entry, 3, 'cart_errors.log');
     }
-    
+
     private function getOrCreateCart() {
         try {
             // Iniciar transacción
             $this->conn->begin_transaction();
-            
+
             // Verificar si existe un carrito activo
             $query = "SELECT ID_Carrito FROM Carrito WHERE ID_Usuario = ? AND estado = 'pendiente' FOR UPDATE";
             $stmt = $this->conn->prepare($query);
-            
-            if (!$stmt) {
-                throw new CartException("Error al preparar la consulta: " . $this->conn->error);
-            }
-            
             $stmt->bind_param("i", $this->user_id);
             $stmt->execute();
             $result = $stmt->get_result();
             $carrito = $result->fetch_assoc();
             $stmt->close();
-            
+
             if ($carrito) {
                 $this->conn->commit();
                 return $carrito['ID_Carrito'];
             }
-            
+
             // Si no existe, crear uno nuevo
             $insert_query = "INSERT INTO Carrito (ID_Usuario, fecha_modificacion, estado) VALUES (?, NOW(), 'activo')";
             $stmt = $this->conn->prepare($insert_query);
-            
-            if (!$stmt) {
-                throw new CartException("Error al preparar la inserción: " . $this->conn->error);
-            }
-            
             $stmt->bind_param("i", $this->user_id);
-            
             if (!$stmt->execute()) {
                 throw new CartException("Error al crear el carrito: " . $stmt->error);
             }
-            
             $new_cart_id = $this->conn->insert_id;
             $stmt->close();
-            
+
+            // Crear entrada en Carrito_Producto
+            $this->addProductToCart($new_cart_id, $this->product_id, $this->quantity);
+
             $this->conn->commit();
             return $new_cart_id;
-            
         } catch (Exception $e) {
             $this->conn->rollback();
             $this->logError("Exception in getOrCreateCart: " . $e->getMessage());
             throw $e;
         }
     }
-    
+
     private function verifyProduct($product_id, $quantity) {
         try {
             $query = "SELECT p.ID_Producto, p.nombre, p.Cantidad, p.Precio, u.ID_Usuario as ID_Vendedor 
@@ -135,11 +127,6 @@ class CartHandler {
                      FOR UPDATE";
             
             $stmt = $this->conn->prepare($query);
-            
-            if (!$stmt) {
-                throw new CartException("Error al preparar la consulta del producto: " . $this->conn->error);
-            }
-            
             $stmt->bind_param("i", $product_id);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -161,69 +148,59 @@ class CartHandler {
             throw $e;
         }
     }
-    
-    public function addToCart($product_id, $quantity) {
+
+    private function addProductToCart($cart_id, $product_id, $quantity) {
         try {
-            $this->conn->begin_transaction();
-            
-            // Verificar producto
-            $producto = $this->verifyProduct($product_id, $quantity);
-            
-            // Obtener o crear carrito
-            $cart_id = $this->getOrCreateCart();
-            
             // Verificar si el producto ya está en el carrito
             $check_query = "SELECT cantidad FROM Carrito_Producto WHERE ID_Carrito = ? AND ID_Producto = ?";
             $stmt = $this->conn->prepare($check_query);
-            
-            if (!$stmt) {
-                throw new CartException("Error al verificar producto en carrito: " . $this->conn->error);
-            }
-            
             $stmt->bind_param("ii", $cart_id, $product_id);
             $stmt->execute();
             $result = $stmt->get_result();
             $existing_product = $result->fetch_assoc();
             $stmt->close();
-            
+
             if ($existing_product) {
                 // Actualizar cantidad
                 $new_quantity = $existing_product['cantidad'] + $quantity;
                 $update_query = "UPDATE Carrito_Producto SET cantidad = ? WHERE ID_Carrito = ? AND ID_Producto = ?";
                 $stmt = $this->conn->prepare($update_query);
-                
-                if (!$stmt) {
-                    throw new CartException("Error al actualizar producto en carrito: " . $this->conn->error);
-                }
-                
                 $stmt->bind_param("iii", $new_quantity, $cart_id, $product_id);
                 $stmt->execute();
             } else {
                 // Insertar nuevo producto
                 $insert_query = "INSERT INTO Carrito_Producto (ID_Carrito, ID_Producto, cantidad) VALUES (?, ?, ?)";
                 $stmt = $this->conn->prepare($insert_query);
-                
-                if (!$stmt) {
-                    throw new CartException("Error al insertar producto en carrito: " . $this->conn->error);
-                }
-                
                 $stmt->bind_param("iii", $cart_id, $product_id, $quantity);
                 $stmt->execute();
             }
-            
+        } catch (Exception $e) {
+            $this->logError("Exception in addProductToCart: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function addToCart($product_id, $quantity) {
+        try {
+            $this->conn->begin_transaction();
+
+            // Verificar producto
+            $producto = $this->verifyProduct($product_id, $quantity);
+
+            // Obtener o crear carrito
+            $cart_id = $this->getOrCreateCart();
+
+            // Agregar producto al carrito
+            $this->addProductToCart($cart_id, $product_id, $quantity);
+
             // Actualizar fecha de modificación del carrito
             $update_cart_query = "UPDATE Carrito SET fecha_modificacion = NOW() WHERE ID_Carrito = ?";
             $stmt = $this->conn->prepare($update_cart_query);
-            
-            if (!$stmt) {
-                throw new CartException("Error al actualizar fecha del carrito: " . $this->conn->error);
-            }
-            
             $stmt->bind_param("i", $cart_id);
             $stmt->execute();
-            
+
             $this->conn->commit();
-            
+
             return [
                 'success' => true,
                 'message' => 'Producto agregado al carrito correctamente',
@@ -232,10 +209,48 @@ class CartHandler {
                     'quantity' => $quantity
                 ]
             ];
-            
         } catch (Exception $e) {
             $this->conn->rollback();
             $this->logError("Error in addToCart: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function updateProductQuantity($product_id, $quantity, $cart_id) {
+        try {
+            $this->conn->begin_transaction();
+
+            // Verificar producto
+            $producto = $this->verifyProduct($product_id, $quantity);
+
+            // Actualizar cantidad en Carrito_Producto
+            $update_query = "UPDATE Carrito_Producto SET cantidad = ? WHERE ID_Carrito = ? AND ID_Producto = ?";
+            $stmt = $this->conn->prepare($update_query);
+            $stmt->bind_param("iii", $quantity, $cart_id, $product_id);
+            $stmt->execute();
+
+            // Actualizar fecha de modificación del carrito
+            $update_cart_query = "UPDATE Carrito SET fecha_modificacion = NOW() WHERE ID_Carrito = ?";
+            $stmt = $this->conn->prepare($update_cart_query);
+            $stmt->bind_param("i", $cart_id);
+            $stmt->execute();
+
+            $this->conn->commit();
+
+            return [
+                'success' => true,
+                'message' => 'Cantidad actualizada correctamente',
+                'data' => [
+                    'product_name' => $producto['nombre'],
+                    'quantity' => $quantity
+                ]
+            ];
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            $this->logError("Error in updateProductQuantity: " . $e->getMessage());
             return [
                 'success' => false,
                 'message' => $e->getMessage()

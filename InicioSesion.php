@@ -42,8 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     header('Location: panel_comprador.php');
                 } elseif ($rol_usuario == 0) { // Vendedor
                     header('Location: perfil_vendedor.php');
-                } elseif ($rol_usuario == 2) { // Despachador
-                    header('Location: panel_despachador.php');
                 } else {
                     echo "<script>alert('Rol no reconocido.');</script>";
                 }
@@ -76,13 +74,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="container">
             <h1>Iniciar Sesión</h1>
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
-                <label for="username">Correo Electrónico:</label>
+                <label for="username">
+                <i class="fas fa-envelope"></i>
+                    Correo Electrónico:
+                </label>
                 <input type="text" id="username" name="username" required>
                 <label for="password">Contraseña:</label>
                 <input type="password" id="password" name="password" required>
                 <button type="submit">Entrar</button>
             </form>
-            <div class="forgot-password"><a href="#">¿Olvidaste tu contraseña?</a></div>
+            <div class="forgot-password"><a href="recuperar_password.php">¿Olvidaste tu contraseña?</a></div>
             <div class="create-account"><a href="crear_cuenta.php">Crear una cuenta</a></div>
         </div>
     </div>
