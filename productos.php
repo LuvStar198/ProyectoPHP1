@@ -2,62 +2,6 @@
 // Iniciar la sesión
 session_start();
 
-
-// Manejo de la barra lateral
-if (isset($_POST['toggle_sidebar'])) {
-// Alternar el estado de la barra lateral
-    $_SESSION['sidebar_collapsed'] = !isset($_SESSION['sidebar_collapsed']) || !$_SESSION['sidebar_collapsed'];
-    // Manejar solicitudes AJAX
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-        echo json_encode(['success' => true]);
-        exit;
-    }
-// Redireccionar para solicitudes no-AJAX
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
-}
-
-// Determinar el estado actual de la barra lateral
-$sidebarClass = isset($_SESSION['sidebar_collapsed']) && $_SESSION['sidebar_collapsed'] ? 'collapsed' : '';
-$mainContentClass = isset($_SESSION['sidebar_collapsed']) && $_SESSION['sidebar_collapsed'] ? 'expanded' : '';
-$footerClass = isset($_SESSION['sidebar_collapsed']) && $_SESSION['sidebar_collapsed'] ? 'expanded' : '';
-
-// funcionalidad de busqueda
-function searchProducts($searchTerm, $conn) {
-    $searchTerm = '%' . $searchTerm . '%';
-
-// Obtener productos de vendedores
-    $sql = "SELECT p.ID_Producto, p.nombre, p.Precio, p.imagen_producto, p.categoria, p.valoracion,
-                   v.ID_Usuario AS ID_Vendedor, v.Nombre AS NombreVendedor, c.Nombre AS NombreComuna
-            FROM Producto p
-            JOIN Usuario v ON p.ID_Vendedor = v.ID_Usuario
-            JOIN Comuna c ON v.ID_Comuna = c.ID_Comuna
-            WHERE (p.nombre LIKE ? OR p.descripcion LIKE ? OR p.categoria LIKE ?)
-            AND v.rol = 0  
-            ORDER BY p.categoria, p.nombre";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    $products = [];
-    while ($row = $result->fetch_assoc()) {
-        $products[] = $row;
-    }
-    
-    return $products;
-}
-// Manejar solicitud de búsqueda AJAX
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
-    $searchTerm = $_GET['search'];
-    $searchResults = searchProducts($searchTerm, $conn);
-    
-    header('Content-Type: application/json');
-    echo json_encode($searchResults);
-    exit;
-}
-
 // Verificar si el usuario ha iniciado sesión y es un comprador
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
     header("Location: IniciarSesion.php");
@@ -68,45 +12,144 @@ $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'];
 
 // Conexión a la base de datos
-
 require 'db_config/db_data.php';
 
-// Obtener información del usuario
-$sql_user = "SELECT Nombre, imagen_usuario, Comuna FROM Usuario WHERE ID_Usuario = ?";
+// Función para manejar errores de consulta
+function handleQueryError($conn, $query) {
+    echo "Error en la consulta: " . $conn->error;
+    echo "<br>Consulta: " . $query;
+    die();
+}
+
+// Obtener información del usuario y su comuna
+$sql_user = "SELECT nombre, imagen_usuario, comuna 
+             FROM usuario 
+             WHERE id_usuario = ?";
+
 $stmt_user = $conn->prepare($sql_user);
+if (!$stmt_user) {
+    handleQueryError($conn, $sql_user);
+}
+
 $stmt_user->bind_param("i", $user_id);
 $stmt_user->execute();
 $result_user = $stmt_user->get_result();
 $user_info = $result_user->fetch_assoc();
 
-// Obtener productos de vendedores en la misma comuna
-$sql_products = "SELECT p.ID_Producto, p.nombre, p.Precio, p.imagen_producto, p.categoria, p.valoracion,
-                        v.ID_Usuario AS ID_Vendedor, v.Nombre AS NombreVendedor
-                 FROM Producto p
-                 JOIN Usuario v ON p.ID_Vendedor = v.ID_Usuario
-                 WHERE v.rol = 0  
-                 ORDER BY p.categoria, p.nombre";
-
-$stmt_products = $conn->prepare($sql_products);
-
-if ($stmt_products === false) {
-die("Error en la preparación de la consulta: " . $conn->error);
+// Verificar que tenemos la información del usuario
+if (!$user_info) {
+    die("No se pudo obtener la información del usuario");
 }
 
+// Debug: Mostrar información del usuario
+error_log("Info usuario: " . print_r($user_info, true));
+
+// Consulta de productos
+$sql_products = "SELECT 
+    p.id_producto,
+    p.nombre,
+    p.precio,
+    p.imagen_producto,
+    p.categoria,
+    p.valoracion,
+    v.id_usuario AS id_vendedor,
+    v.nombre AS nombre_vendedor,
+    v.comuna
+FROM 
+    producto p
+    INNER JOIN usuario v ON p.id_vendedor = v.id_usuario
+WHERE 
+    v.rol = 0 
+    AND v.comuna = ?
+ORDER BY 
+    p.categoria, p.nombre";
+
+$stmt_products = $conn->prepare($sql_products);
+if (!$stmt_products) {
+    handleQueryError($conn, $sql_products);
+}
+
+// Debug: Mostrar el valor de la comuna
+error_log("Comuna del usuario: " . $user_info['comuna']);
+
+$stmt_products->bind_param("s", $user_info['comuna']);
+
 if (!$stmt_products->execute()) {
-die("Error al ejecutar la consulta: " . $stmt_products->error);
+    echo "Error al ejecutar la consulta: " . $stmt_products->error;
+    die();
 }
 
 $result_products = $stmt_products->get_result();
 
+// Inicializar el array de productos
 $products = [];
+
+// Debug: Contar resultados
+$count = 0;
+
+// Agrupar productos por categoría
 while ($row = $result_products->fetch_assoc()) {
-$products[$row['categoria']][] = $row;
+    $products[$row['categoria']][] = $row;
+    $count++;
 }
 
+// Debug: Mostrar cantidad de productos encontrados
+error_log("Cantidad de productos encontrados: " . $count);
+
+// Función de búsqueda actualizada
+function searchProducts($searchTerm, $conn, $userComuna) {
+    $searchTerm = '%' . $searchTerm . '%';
+    
+    $sql = "SELECT 
+        p.id_producto,
+        p.nombre,
+        p.precio,
+        p.imagen_producto,
+        p.categoria,
+        p.valoracion,
+        v.id_usuario AS id_vendedor,
+        v.nombre AS nombre_vendedor
+    FROM 
+        producto p
+        INNER JOIN usuario v ON p.id_vendedor = v.id_usuario
+    WHERE 
+        (p.nombre LIKE ? OR p.descripcion LIKE ? OR p.categoria LIKE ?)
+        AND v.rol = 0 
+        AND v.comuna = ?
+    ORDER BY 
+        p.categoria, p.nombre";
+    
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        handleQueryError($conn, $sql);
+    }
+    
+    $stmt->bind_param("ssss", $searchTerm, $searchTerm, $searchTerm, $userComuna);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $products = [];
+    while ($row = $result->fetch_assoc()) {
+        $products[] = $row;
+    }
+    
+    return $products;
+}
+
+// Manejar solicitud de búsqueda AJAX
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
+    $searchTerm = $_GET['search'];
+    $searchResults = searchProducts($searchTerm, $conn, $user_info['comuna']);
+    
+    header('Content-Type: application/json');
+    echo json_encode($searchResults);
+    exit;
+}
+
+// Cerrar las consultas preparadas
+$stmt_user->close();
 $stmt_products->close();
 $conn->close();
-
 ?>
 
 <!DOCTYPE html>
@@ -192,70 +235,84 @@ $conn->close();
         </div>
     </div>
 
-    <div class="container-fluid px-4 py-8 mx-auto transition-all duration-300 ease-in-out">
+    <div class="container-fluid px-4 py-8 mx-auto">
     <div class="max-w-7xl mx-auto">
         <h2 class="text-2xl font-bold mb-4 text-center">
-            Productos locales
-            <?php
-            if (isset($user_info['Comuna']) && !empty($user_info['Comuna'])) {
-                echo " en " . htmlspecialchars($user_info['Comuna']);
-            }
-            ?>
+            Productos locales en <?php echo htmlspecialchars($user_info['comuna']); ?>
         </h2>
         
         <?php foreach (['Fruta', 'Verdura'] as $categoria): ?>
-        <h3 class="text-2xl font-semibold mt-8 mb-4 text-center"><?php echo $categoria; ?>s</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto px-4">
-            <?php foreach ($products[$categoria] ?? [] as $product): ?>
-                <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
-                    <a href="#" class="block">
-                        <img class="w-full h-48 object-cover rounded-t-lg" src="<?php echo htmlspecialchars($product['imagen_producto']); ?>" alt="<?php echo htmlspecialchars($product['nombre']); ?>" />
-                    </a>
-                    <div class="p-4">
-                        <a href="#" class="block">
-                            <h5 class="text-lg font-semibold text-gray-900 mb-2"><?php echo htmlspecialchars($product['nombre']); ?></h5>
-                        </a>
-                        <p class="text-sm text-gray-600 mb-2">
-                            Vendedor: 
-                            <a href="perfil_vendedor_mostrar.php?id=<?php echo $product['ID_Vendedor']; ?>" class="text-blue-500 hover:underline">
-                                <?php echo htmlspecialchars($product['NombreVendedor']); ?>
-                            </a>
-                        </p>
-                        <div class="flex items-center mb-3">
-                            <div class="flex items-center space-x-1">
-                                <?php
-                                $rating = round($product['valoracion'], 1);
-                                $fullStars = floor($rating);
-                                $emptyStars = 5 - $fullStars;
-                                for ($i = 0; $i < $fullStars; $i++): ?>
-                                    <svg class="w-4 h-4 text-yellow-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
-                                        <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
-                                    </svg>
-                                <?php endfor; 
-                                for ($i = 0; $i < $emptyStars; $i++): ?>
-                                    <svg class="w-4 h-4 text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
-                                        <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
-                                    </svg>
-                                <?php endfor; ?>
+            <div class="mb-8">
+                <h3 class="text-2xl font-semibold mt-8 mb-4 text-center"><?php echo $categoria; ?>s</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <?php 
+                    if (isset($products[$categoria]) && !empty($products[$categoria])):
+                        foreach ($products[$categoria] as $product): 
+                    ?>
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                            <div class="relative pb-48">
+                                <img 
+                                    src="<?php echo htmlspecialchars($product['imagen_producto']); ?>" 
+                                    alt="<?php echo htmlspecialchars($product['nombre']); ?>"
+                                    class="absolute h-full w-full object-cover"
+                                >
                             </div>
-                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded ms-2"><?php echo $rating; ?></span>
+                            <div class="p-4">
+                                <h4 class="text-xl font-semibold mb-2">
+                                    <?php echo htmlspecialchars($product['nombre']); ?>
+                                </h4>
+                                <p class="text-gray-600 mb-2">
+                                    Vendedor: 
+                                    <a href="perfil_vendedor_mostrar.php?id=<?php echo $product['id_vendedor']; ?>" 
+                                       class="text-blue-500 hover:underline">
+                                        <?php echo htmlspecialchars($product['nombre_vendedor']); ?>
+                                    </a>
+                                </p>
+                                
+                                <!-- Sistema de valoración -->
+                                <div class="flex items-center mb-2">
+                                    <?php
+                                    $rating = round($product['valoracion'], 1);
+                                    for ($i = 1; $i <= 5; $i++):
+                                        if ($i <= $rating): ?>
+                                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                        <?php else: ?>
+                                            <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                        <?php endif;
+                                    endfor; ?>
+                                    <span class="ml-2 text-gray-600"><?php echo $rating; ?></span>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-4">
+                                    <span class="text-xl font-bold text-green-600">
+                                        $<?php echo number_format($product['precio'], 0, ',', '.'); ?>
+                                    </span>
+                                    <button 
+                                        class="add-to-cart-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                                        data-product-id="<?php echo $product['id_producto']; ?>"
+                                        data-product-name="<?php echo htmlspecialchars($product['nombre']); ?>"
+                                        data-product-price="<?php echo $product['precio']; ?>">
+                                        Agregar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-2xl font-bold text-gray-900">$<?php echo number_format($product['Precio'], 0, ',', '.'); ?></span>
-                            <button class="add-to-cart-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200" 
-                                    data-product-id="<?php echo $product['ID_Producto']; ?>"
-                                    data-product-name="<?php echo htmlspecialchars($product['nombre']); ?>"
-                                    data-product-price="<?php echo $product['Precio']; ?>">
-                                Agregar
-                            </button>
-                        </div>
-                    </div>
+                    <?php 
+                        endforeach;
+                    else: 
+                    ?>
+                        <p class="col-span-full text-center text-gray-500">
+                            No hay <?php echo strtolower($categoria); ?>s disponibles en tu zona.
+                        </p>
+                    <?php 
+                    endif; 
+                    ?>
                 </div>
-            <?php endforeach; ?>
-        </div>
-        <?php if (empty($products[$categoria])): ?>
-            <p class="text-gray-600 text-center">No hay <?php echo strtolower($categoria); ?>s disponibles en tu zona.</p>
-        <?php endif; ?>
+            </div>
         <?php endforeach; ?>
     </div>
 </div>
@@ -353,110 +410,53 @@ $conn->close();
 <script>
 
     
-    // Manejo del modal y sus botones
-$(document).ready(function() {
-    // Función para mostrar el modal con mensaje personalizado
-    function showModal(message, isError = false) {
-        $('#modalMessage').text(message);
-        if (isError) {
-            $('#modalMessage').addClass('text-red-600');
-        } else {
-            $('#modalMessage').removeClass('text-red-600');
-        }
-        $('#cartModal').removeClass('hidden').addClass('flex');
-    }
-
-    // Función para cerrar el modal
-    function closeModal() {
-        $('#cartModal').removeClass('flex').addClass('hidden');
-    }
-
-    // Manejador para el botón "Seguir comprando"
-    $('#continueShoppingBtn').click(function(e) {
-        e.preventDefault();
-        closeModal();
-    });
-
-    // Cerrar modal al hacer clic fuera de él
-    $('#cartModal').click(function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
-
-    // Manejador para el botón de agregar al carrito
-    $('.add-to-cart-btn').click(function() {
-        const button = $(this);
-        const productId = button.data('product-id');
-        
-        // Debug log
-        console.log('Intentando agregar producto:', productId);
-
-        // Deshabilitar el botón
-        button.prop('disabled', true);
-
-        // Realizar la petición AJAX
-        $.ajax({
-            url: 'agregar_carrito.php',
-            method: 'POST',
-            data: {
-                product_id: productId,
-                cantidad: 1
-            },
-            success: function(response) {
-                console.log('Respuesta recibida:', response);
-                
-                if (response.success) {
-                    showModal(response.message || 'Producto agregado al carrito correctamente');
-                } else {
-                    showModal(response.message || 'Error al agregar al carrito', true);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error Details:', {
-                    status: xhr.status,
-                    statusText: xhr.statusText,
-                    responseText: xhr.responseText
-                });
-                
-                showModal('Error al procesar la solicitud. Por favor, intente nuevamente.', true);
-            },
-            complete: function() {
-                button.prop('disabled', false);
-                console.log('Solicitud completada');
-            }
-        });
-    });
-
-    // Prevenir que el modal se cierre al hacer clic dentro del contenido del modal
-    $('.modal-content').click(function(e) {
-        e.stopPropagation();
-    });
-});
-
-// Función para mostrar el modal
-function showModal(message, isError = false) {
-    const modal = $('#cartModal');
-    const modalMessage = $('#modalMessage');
-    
-    modalMessage.text(message);
-    modalMessage.toggleClass('text-red-600', isError);
-    
-    modal.removeClass('hidden').addClass('flex');
-}
-ddocument.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const footer = document.getElementById('footer');
     const toggleBtn = document.getElementById('sidebarToggle');
     const sidebarToggleForm = document.getElementById('sidebarToggleForm');
-    
-    // Función para manejar el toggle del sidebar
-    function toggleSidebar(event) {
-        if (event) {
-            event.preventDefault();
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    // Configuración inicial
+    initializePage();
+    setupEventListeners();
+
+    // Función de inicialización
+    function initializePage() {
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile) {
+            adjustSidebarPosition();
         }
+    }
+
+    // Configurar event listeners
+    function setupEventListeners() {
+        // Sidebar toggle
+        sidebarToggleForm.addEventListener('submit', handleSidebarToggle);
         
+        // Click fuera del sidebar (móvil)
+        document.addEventListener('click', handleOutsideClick);
+        
+        // Resize window
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(handleWindowResize, 250);
+        });
+
+        // Búsqueda
+        searchInput.addEventListener('input', debounce(handleSearch, 300));
+
+        // Botones de agregar al carrito
+        setupAddToCartButtons();
+    }
+
+    // Manejadores de eventos
+    function handleSidebarToggle(event) {
+        event.preventDefault();
         const isMobile = window.innerWidth <= 768;
         
         if (isMobile) {
@@ -465,125 +465,182 @@ ddocument.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
             footer.classList.toggle('expanded');
-        }
-        
-        // Actualizar la posición del botón toggle en desktop
-        if (!isMobile) {
-            toggleBtn.style.left = sidebar.classList.contains('collapsed') ? '1rem' : 'calc(var(--sidebar-width) + 1rem)';
+            adjustSidebarPosition();
         }
     }
-    
-    // Event listeners
-    sidebarToggleForm.addEventListener('submit', toggleSidebar);
-    
-    // Cerrar sidebar al hacer click fuera en móvil
-    document.addEventListener('click', function(event) {
+
+    function handleOutsideClick(event) {
         const isMobile = window.innerWidth <= 768;
-        if (isMobile && !sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+        if (isMobile && 
+            !sidebar.contains(event.target) && 
+            !toggleBtn.contains(event.target)) {
             sidebar.classList.remove('active');
         }
-    });
-    
-    // Manejar cambios de tamaño de ventana
-    let timeoutId;
-    window.addEventListener('resize', function() {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(function() {
-            const isMobile = window.innerWidth <= 768;
-            
-            if (!isMobile) {
-                sidebar.classList.remove('active');
-                toggleBtn.style.left = sidebar.classList.contains('collapsed') ? '1rem' : 'calc(var(--sidebar-width) + 1rem)';
-            } else {
-                toggleBtn.style.left = '1rem';
-            }
-        }, 250);
-    });
-});
-        //scrip para manejar las interacciones en la pagina
-        $(document).ready(function() {
-    function toggleSidebar() {
-        $('#sidebar').toggleClass('collapsed');
-        $('#mainContent, #footer').toggleClass('expanded');
-        $('body').toggleClass('sidebar-open');
+    }
+
+    function handleWindowResize() {
+        const isMobile = window.innerWidth <= 768;
         
-        // Ajustar el contenedor de productos
-        $('.container').css({
-            'margin-left': $('#sidebar').hasClass('collapsed') ? '0' : '250px',
-            'width': $('#sidebar').hasClass('collapsed') ? '100%' : 'calc(100% - 250px)'
+        if (!isMobile) {
+            sidebar.classList.remove('active');
+            adjustSidebarPosition();
+        } else {
+            toggleBtn.style.left = '1rem';
+        }
+    }
+
+    async function handleSearch() {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm.length < 2) {
+            searchResults.innerHTML = '';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${window.location.pathname}?search=${encodeURIComponent(searchTerm)}`);
+            if (!response.ok) throw new Error('Error en la búsqueda');
+            
+            const results = await response.json();
+            displaySearchResults(results);
+        } catch (error) {
+            console.error('Error en la búsqueda:', error);
+            searchResults.innerHTML = '<p class="text-red-500">Error al realizar la búsqueda</p>';
+        }
+    }
+
+    // Funciones auxiliares
+    function adjustSidebarPosition() {
+        toggleBtn.style.left = sidebar.classList.contains('collapsed') 
+            ? '1rem' 
+            : 'calc(var(--sidebar-width) + 1rem)';
+    }
+
+    function displaySearchResults(results) {
+        if (!Array.isArray(results) || results.length === 0) {
+            searchResults.innerHTML = '<p class="text-gray-600 text-center">No se encontraron resultados.</p>';
+            return;
+        }
+
+        const resultsHTML = results.map(product => {
+            const rating = Math.round(product.valoracion * 10) / 10;
+            const fullStars = Math.floor(rating);
+            const emptyStars = 5 - fullStars;
+
+            const starsHTML = Array(fullStars).fill('★').concat(Array(emptyStars).fill('☆')).join('');
+
+            return `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="${escapeHtml(product.imagen_producto)}" 
+                         alt="${escapeHtml(product.nombre)}" 
+                         class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h4 class="font-semibold">${escapeHtml(product.nombre)}</h4>
+                        <p class="text-gray-600">
+                            Vendedor: 
+                            <a href="perfil_vendedor_mostrar.php?id=${escapeHtml(product.id_vendedor)}" 
+                               class="text-blue-500 hover:underline">
+                                ${escapeHtml(product.NombreVendedor)}
+                            </a>
+                        </p>
+                        <div class="flex items-center mb-2">
+                            <span class="text-yellow-500">${starsHTML}</span>
+                            <span class="ml-1">${rating}</span>
+                        </div>
+                        <p class="text-green-600 font-bold mt-2">
+                            $${parseFloat(product.Precio).toLocaleString('es-CL')}
+                        </p>
+                        <button class="add-to-cart-btn mt-2 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                data-product-id="${escapeHtml(product.id_producto)}">
+                            Agregar al carrito
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        searchResults.innerHTML = resultsHTML;
+        setupAddToCartButtons();
+    }
+
+    function setupAddToCartButtons() {
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', handleAddToCart);
         });
     }
 
-    $('#sidebarToggleForm').on('submit', function(e) {
-        e.preventDefault();
-        toggleSidebar();
-    });
+    async function handleAddToCart(event) {
+        const button = event.currentTarget;
+        const productId = button.dataset.productId;
         
-        function performSearch() {
-            var searchTerm = $('#searchInput').val();
-            
-            $.ajax({
-                url: '<?php echo $_SERVER['PHP_SELF']; ?>',
-                method: 'GET',
-                data: { search: searchTerm },
-                dataType: 'json',
-                success: function(results) {
-                    displaySearchResults(results);
+        button.disabled = true;
+        
+        try {
+            const response = await fetch('agregar_carrito.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                error: function(xhr, status, error) {
-                    console.error("Error in search:", error);
-                    alert("An error occurred while searching. Please try again.");
-                }
+                body: `product_id=${productId}&cantidad=1`
             });
-        }
-        
-        function displaySearchResults(results) {
-            var resultsContainer = $('#searchResults');
-            resultsContainer.empty();
+
+            const data = await response.json();
             
-            if (results.length === 0) {
-                resultsContainer.append('<p class="text-gray-600">No se encontraron resultados.</p>');
-                return;
+            if (data.success) {
+                showModal(data.message || 'Producto agregado al carrito correctamente');
+            } else {
+                showModal(data.message || 'Error al agregar al carrito', true);
             }
-            
-            results.forEach(function(product) {
-                var rating = Math.round(product.valoracion * 10) / 10;
-                var stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
-                
-                var productCard = `
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                        <img src="${product.imagen_producto}" alt="${product.nombre}" class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <h4 class="font-semibold">${product.nombre}</h4>
-                            <p class="text-gray-600">
-                                Vendedor: 
-                                <a href="perfil_vendedor.php?id=${product.ID_Vendedor}" class="text-blue-500 hover:underline">
-                                    ${product.NombreVendedor}
-                                </a>
-                            </p>
-                            <p class="text-gray-600">Comuna: ${product.NombreComuna}</p>
-                            <p class="text-yellow-500">${stars} ${rating}</p>
-                            <p class="text-green-600 font-bold mt-2">$${parseFloat(product.Precio).toLocaleString('es-CL')}</p>
-                            <button class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Agregar al carrito</button>
-                        </div>
-                    </div>
-                `;
-                resultsContainer.append(productCard);
-            });
-        }    
-        $(window).resize(function() {
-        if ($(window).width() > 768) {
-            $('#sidebar').removeClass('collapsed');
-            $('#mainContent, #footer').removeClass('expanded');
-            $('body').removeClass('sidebar-open');
-            
-            // Restablecer el contenedor de productos
-            $('.container').css({
-                'margin-left': '250px',
-                'width': 'calc(100% - 250px)'
-            });
+        } catch (error) {
+            console.error('Error al agregar al carrito:', error);
+            showModal('Error al procesar la solicitud. Por favor, intente nuevamente.', true);
+        } finally {
+            button.disabled = false;
         }
-    });
+    }
+
+    // Utilidades
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function showModal(message, isError = false) {
+        const modal = document.getElementById('cartModal');
+        const modalMessage = document.getElementById('modalMessage');
+        
+        modalMessage.textContent = message;
+        modalMessage.classList.toggle('text-red-600', isError);
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Configurar cierre del modal
+        const closeModal = () => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        };
+
+        document.getElementById('continueShoppingBtn').onclick = closeModal;
+        modal.onclick = (e) => {
+            if (e.target === modal) closeModal();
+        };
+    }
 });
     </script>
 </body>
