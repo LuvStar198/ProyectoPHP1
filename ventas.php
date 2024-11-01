@@ -84,6 +84,7 @@ $conn->close();
             <a href="mis_productos.php">Mis Productos</a>
             <a href="ventas.php">Ventas</a>
             <a href="perfil_vendedor.php">Mi Perfil</a>
+            <a href="pedidos.php">Pedidos</a>
         </nav>
         <div style="padding: 1rem;">
             Bienvenido, <?php echo htmlspecialchars($user_name); ?><br>
