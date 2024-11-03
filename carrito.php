@@ -89,52 +89,154 @@ error_log("ID de usuario: " . $user_id);
 error_log("ID de carrito: " . $cart_id);
 error_log("Número de productos encontrados: " . $result_products->num_rows);
 
-// Procesar acciones AJAX
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action'])) {
-        switch ($_POST['action']) {
-            case 'add_to_cart':
-                if (isset($_POST['product_id'], $_POST['quantity'])) {
-                    $product_id = $_POST['product_id'];
-                    $quantity = $_POST['quantity'];
-                    
-                    $cartHandler = new CartHandler($conn, $user_id, $product_id, $quantity);
-                    $result = $cartHandler->addToCart($product_id, $quantity);
-                    echo json_encode($result);
-                    exit;
+// Clase CartHandler para manejar las operaciones del carrito
+class CartHandler {
+    private $conn;
+    private $user_id;
+    
+    public function __construct($conn, $user_id) {
+        $this->conn = $conn;
+        $this->user_id = $user_id;
+    }
+
+    public function updateProductQuantity($product_id, $quantity, $cart_id) {
+        try {
+            // Verificar que el carrito pertenece al usuario
+            $check_cart = "SELECT ID_Carrito FROM Carrito WHERE ID_Carrito = ? AND ID_Usuario = ?";
+            $stmt_cart = $this->conn->prepare($check_cart);
+            $stmt_cart->bind_param("ii", $cart_id, $this->user_id);
+            $stmt_cart->execute();
+            $result_cart = $stmt_cart->get_result();
+            
+            if ($result_cart->num_rows === 0) {
+                throw new Exception("Carrito no válido");
+            }
+
+            // Verificar el stock disponible
+            $check_stock = "SELECT Cantidad FROM Producto WHERE ID_Producto = ?";
+            $stmt_stock = $this->conn->prepare($check_stock);
+            $stmt_stock->bind_param("i", $product_id);
+            $stmt_stock->execute();
+            $result_stock = $stmt_stock->get_result();
+            $stock = $result_stock->fetch_assoc();
+
+            if (!$stock || $quantity > $stock['Cantidad']) {
+                throw new Exception("No hay suficiente stock disponible");
+            }
+
+            // Verificar si el producto está en el carrito
+            $check_product = "SELECT ID_Producto FROM Carrito_Producto WHERE ID_Carrito = ? AND ID_Producto = ?";
+            $stmt_check = $this->conn->prepare($check_product);
+            $stmt_check->bind_param("ii", $cart_id, $product_id);
+            $stmt_check->execute();
+            $result_check = $stmt_check->get_result();
+
+            if ($result_check->num_rows === 0) {
+                throw new Exception("Producto no encontrado en el carrito");
+            }
+
+            // Iniciar transacción
+            $this->conn->begin_transaction();
+
+            try {
+                // Actualizar la cantidad en Carrito_Producto
+                $update_product = "UPDATE Carrito_Producto 
+                                 SET cantidad = ? 
+                                 WHERE ID_Carrito = ? 
+                                 AND ID_Producto = ?";
+                
+                $stmt_product = $this->conn->prepare($update_product);
+                if (!$stmt_product) {
+                    throw new Exception("Error en la preparación de la consulta: " . $this->conn->error);
                 }
-                break;
-            case 'update_quantity':
-                if (isset($_POST['product_id'], $_POST['quantity'])) {
-                    $product_id = $_POST['product_id'];
-                    $quantity = $_POST['quantity'];
-                    
-                    $cartHandler = new CartHandler($conn, $user_id, $product_id, $quantity);
-                    $result = $cartHandler->updateProductQuantity($product_id, $quantity, $cart_id);
-                    echo json_encode($result);
-                    exit;
+
+                $stmt_product->bind_param("iii", $quantity, $cart_id, $product_id);
+                
+                if (!$stmt_product->execute()) {
+                    throw new Exception("Error al actualizar la cantidad del producto");
                 }
-                break;
-            case 'remove_product':
-                if (isset($_POST['product_id'])) {
-                    $product_id = $_POST['product_id'];
-                    
-                    $delete_sql = "DELETE FROM Carrito_Producto 
-                                 WHERE ID_Carrito = ? AND ID_Producto = ?";
-                    $delete_stmt = $conn->prepare($delete_sql);
-                    $delete_stmt->bind_param("ii", $cart_id, $product_id);
-                    
-                    $response = array(
-                        'success' => $delete_stmt->execute(),
-                        'message' => $delete_stmt->error ? $delete_stmt->error : 'Producto eliminado'
-                    );
-                    echo json_encode($response);
-                    exit;
+
+                // Actualizar fecha_modificacion en la tabla Carrito
+                $update_cart = "UPDATE Carrito 
+                              SET fecha_modificacion = NOW() 
+                              WHERE ID_Carrito = ?";
+                
+                $stmt_cart = $this->conn->prepare($update_cart);
+                if (!$stmt_cart) {
+                    throw new Exception("Error en la preparación de la consulta del carrito");
                 }
-                break;
+
+                $stmt_cart->bind_param("i", $cart_id);
+                
+                if (!$stmt_cart->execute()) {
+                    throw new Exception("Error al actualizar la fecha del carrito");
+                }
+
+                // Confirmar transacción
+                $this->conn->commit();
+
+                return [
+                    'success' => true,
+                    'message' => 'Cantidad actualizada correctamente',
+                    'new_quantity' => $quantity
+                ];
+
+            } catch (Exception $e) {
+                // Revertir transacción en caso de error
+                $this->conn->rollback();
+                throw $e;
+            }
+
+        } catch (Exception $e) {
+            error_log("Error en CartHandler::updateProductQuantity: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
         }
     }
 }
+
+
+
+// Procesar acciones AJAX
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    header('Content-Type: application/json');
+    
+    try {
+        if ($_POST['action'] === 'update_quantity') {
+            if (!isset($_POST['product_id'], $_POST['quantity'], $_POST['cart_id'])) {
+                throw new Exception('Faltan parámetros necesarios');
+            }
+            
+            $product_id = filter_var($_POST['product_id'], FILTER_VALIDATE_INT);
+            $quantity = filter_var($_POST['quantity'], FILTER_VALIDATE_INT);
+            $cart_id = filter_var($_POST['cart_id'], FILTER_VALIDATE_INT);
+            
+            if ($product_id === false || $quantity === false || $cart_id === false) {
+                throw new Exception('Parámetros inválidos');
+            }
+            
+            if ($quantity < 1) {
+                throw new Exception('La cantidad debe ser mayor a 0');
+            }
+            
+            $cartHandler = new CartHandler($conn, $user_id);
+            $result = $cartHandler->updateProductQuantity($product_id, $quantity, $cart_id);
+            
+            echo json_encode($result);
+            exit;
+        }
+    } catch (Exception $e) {
+        error_log("Error en el procesamiento AJAX: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+        exit;
+    }
+}
+
 
 ?>
 <!DOCTYPE html>
@@ -292,134 +394,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
-        $('.increase-quantity').click(function() {
-    const input = $(this).siblings('.quantity-input');
-    const newValue = parseInt(input.val()) + 1;
-    const max = parseInt(input.attr('max'));
-    if (newValue <= max) {
-        updateQuantity(
-            input.data('product-id'),
-            input.data('cart-id'),
-            newValue
-        );
-    }
-});
-    $(document).ready(function() {
-        // Función para actualizar cantidad
-        function updateQuantity(productId, cartId, newQuantity) {
-            $.ajax({
-                url: window.location.href,
-                method: 'POST',
-                data: {
-                    action: 'update_quantity',
-                    product_id: productId,
-                    cart_id: cartId,
-                    quantity: newQuantity
-                },
-                success: function(response) {
-                    try {
-                        const data = JSON.parse(response);
-                        if (data.success) {
-                            location.reload();
-                        } else {
-                            alert(data.message || 'Error al actualizar la cantidad');
-                        }
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                        alert('Error al procesar la respuesta del servidor');
-                    }
-                },
-                error: function() {
-                    alert('Error de conexión al actualizar la cantidad');
-                }
-            });
-        }
-        });
-
-        $('.decrease-quantity').click(function() {
-            const input = $(this).siblings('.quantity-input');
-            const newValue = parseInt(input.val()) - 1;
-            if (newValue >= 1) {
-                updateQuantity(
-                    input.data('product-id'),
-                    input.data('cart-id'),
-                    newValue
-                );
-            }
-        });
-
-        // Manejar cambio directo en el input de cantidad
-        $('.quantity-input').change(function() {
-            const newValue = parseInt($(this).val());
-            const max = parseInt($(this).attr('max'));
-            if (newValue >= 1 && newValue <= max) {
-                updateQuantity(
-                    $(this).data('product-id'),
-                    $(this).data('cart-id'),
-                    newValue
-                );
-            }
-        });
-
-        // Función para eliminar producto
-        $('.remove-product').click(function() {
-            const productId = $(this).data('product-id');
-            const cartId = $(this).data('cart-id');
+        $(document).ready(function() {
+    // Función única para actualizar precios
+    function actualizarPrecios() {
+        let totalCarrito = 0;
+        
+        $('.product-item').each(function() {
+            const cantidad = parseInt($(this).find('.quantity-input').val());
+            const precioUnitario = parseFloat($(this).find('.unit-price').data('price'));
+            const subtotal = cantidad * precioUnitario;
+            totalCarrito += subtotal;
             
-            if (confirm('¿Estás seguro de que deseas eliminar este producto del carrito?')) {
-                $.ajax({
-                    url: window.location.href,
-                    method: 'POST',
-                    data: {
-                        action: 'remove_product',
-                        product_id: productId,
-                        cart_id: cartId
-                    },
-                    success: function(response) {
-                        const data = JSON.parse(response);
-                        if (data.success) {
-                            // Eliminar el elemento del DOM y recargar si el carrito está vacío
-                            $(`#product-${productId}`).fadeOut(300, function() {
-                                $(this).remove();
-                                if ($('.product-item').length === 0) {
-                                    location.reload();
-                                }
-                            });
-                        }
-                    }
-                });
-            }
+            $(this).find('.subtotal-price').text('$' + subtotal.toLocaleString('es-CO', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }));
         });
 
-        function updateQuantity(productId, cartId, newQuantity) {
-        $.ajax({
+        $('.cart-total').text('$' + totalCarrito.toLocaleString('es-CO', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }));
+    }
+
+    // Función única para actualizar cantidad en el servidor
+    function actualizarCantidad(idProducto, idCarrito, nuevaCantidad) {
+        return $.ajax({
             url: window.location.href,
             method: 'POST',
             data: {
                 action: 'update_quantity',
-                product_id: productId,
-                cart_id: cartId,
-                quantity: newQuantity
+                product_id: idProducto,
+                cart_id: idCarrito,
+                quantity: nuevaCantidad
             },
-            success: function(response) {
-                try {
-                    const data = JSON.parse(response);
-                    if (!data.success) {
-                        alert(data.message || 'Error al actualizar la cantidad');
-                        location.reload();
-                    }
-                } catch (e) {
-                    console.error('Error parsing response:', e);
-                    alert('Error al procesar la respuesta del servidor');
-                }
-            },
-            error: function() {
-                alert('Error de conexión al actualizar la cantidad');
+            dataType: 'json'  // Especificamos que esperamos JSON como respuesta
+        })
+        .done(function(response) {
+            if (!response.success) {
+                alert(response.message || 'Error al actualizar la cantidad');
+                location.reload();
             }
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error en la solicitud:', textStatus, errorThrown);
+            alert('Error de conexión al actualizar la cantidad');
+            location.reload();
         });
     }
 
-    // Manejar click en aumentar cantidad
+    // Manejador para aumentar cantidad
     $('.increase-quantity').click(function() {
         const input = $(this).siblings('.quantity-input');
         const newValue = parseInt(input.val()) + 1;
@@ -427,8 +451,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (newValue <= max) {
             input.val(newValue);
-            updatePrices();
-            updateQuantity(
+            actualizarPrecios();
+            actualizarCantidad(
                 input.data('product-id'),
                 input.data('cart-id'),
                 newValue
@@ -438,15 +462,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     });
 
-    // Manejar click en disminuir cantidad
+    // Manejador para disminuir cantidad
     $('.decrease-quantity').click(function() {
         const input = $(this).siblings('.quantity-input');
         const newValue = parseInt(input.val()) - 1;
         
         if (newValue >= 1) {
             input.val(newValue);
-            updatePrices();
-            updateQuantity(
+            actualizarPrecios();
+            actualizarCantidad(
                 input.data('product-id'),
                 input.data('cart-id'),
                 newValue
@@ -454,14 +478,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     });
 
-    // Manejar cambio directo en el input de cantidad
+    // Manejador para cambio directo en el input
     $('.quantity-input').change(function() {
         const newValue = parseInt($(this).val());
         const max = parseInt($(this).attr('max'));
         
         if (newValue >= 1 && newValue <= max) {
-            updatePrices();
-            updateQuantity(
+            actualizarPrecios();
+            actualizarCantidad(
                 $(this).data('product-id'),
                 $(this).data('cart-id'),
                 newValue
@@ -469,11 +493,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             alert('Cantidad no válida');
             $(this).val(1);
-            updatePrices();
+            actualizarPrecios();
         }
     });
 
-    // Función para eliminar producto
+    // Manejador para eliminar producto
     $('.remove-product').click(function() {
         const productId = $(this).data('product-id');
         const cartId = $(this).data('cart-id');
@@ -487,150 +511,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     product_id: productId,
                     cart_id: cartId
                 },
-                success: function(response) {
-                    const data = JSON.parse(response);
-                    if (data.success) {
-                        $(`#product-${productId}`).fadeOut(300, function() {
-                            $(this).remove();
-                            updatePrices();
-                            if ($('.product-item').length === 0) {
-                                location.reload();
-                            }
-                        });
-                    }
-                }
-            });
-        }
-    });
-    function actualizarPrecios() {
-    let totalCarrito = 0;
-
-    // Recorrer cada producto en el carrito
-    $('.product-item').each(function() {
-        const inputCantidad = $(this).find('.quantity-input');
-        const cantidad = parseInt(inputCantidad.val());
-        const precioUnitario = parseFloat($(this).find('.unit-price').data('price'));
-        const elementoSubtotal = $(this).find('.subtotal-price');
-        
-        // Calcular subtotal para este producto
-        const subtotal = cantidad * precioUnitario;
-        totalCarrito += subtotal;
-
-        // Actualizar visualización del subtotal con formato
-        elementoSubtotal.text('$' + subtotal.toLocaleString('es-CO', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }));
-    });
-
-    // Actualizar total del carrito con formato
-    $('.cart-total').text('$' + totalCarrito.toLocaleString('es-CO', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }));
-}
-
-// Actualizar precios cuando cambie la cantidad
-$('.quantity-input').change(function() {
-    actualizarPrecios();
-});
-
-// Botón de aumentar cantidad
-$('.increase-quantity').click(function() {
-    const input = $(this).siblings('.quantity-input');
-    const nuevoValor = parseInt(input.val()) + 1;
-    const maximo = parseInt(input.attr('max'));
-    
-    if (nuevoValor <= maximo) {
-        input.val(nuevoValor);
-        actualizarPrecios();
-        actualizarCantidad(
-            input.data('product-id'),
-            input.data('cart-id'),
-            nuevoValor
-        );
-    } else {
-        alert('No hay suficiente stock disponible');
-    }
-});
-
-// Botón de disminuir cantidad
-$('.decrease-quantity').click(function() {
-    const input = $(this).siblings('.quantity-input');
-    const nuevoValor = parseInt(input.val()) - 1;
-    
-    if (nuevoValor >= 1) {
-        input.val(nuevoValor);
-        actualizarPrecios();
-        actualizarCantidad(
-            input.data('product-id'),
-            input.data('cart-id'),
-            nuevoValor
-        );
-    }
-});
-
-// Función para actualizar cantidad en la base de datos
-function actualizarCantidad(idProducto, idCarrito, nuevaCantidad) {
-    $.ajax({
-        url: window.location.href,
-        method: 'POST',
-        data: {
-            action: 'update_quantity',
-            product_id: idProducto,
-            cart_id: idCarrito,
-            quantity: nuevaCantidad
-        },
-        success: function(response) {
-            try {
-                const datos = JSON.parse(response);
-                if (!datos.success) {
-                    alert(datos.message || 'Error al actualizar la cantidad');
-                    location.reload();
-                }
-            } catch (e) {
-                console.error('Error al procesar la respuesta:', e);
-                alert('Error al procesar la respuesta del servidor');
-            }
-        },
-        error: function() {
-            alert('Error de conexión al actualizar la cantidad');
-        }
-    });
-}
-
-// Botón de eliminar producto
-$('.remove-product').click(function() {
-    const idProducto = $(this).data('product-id');
-    const idCarrito = $(this).data('cart-id');
-    
-    if (confirm('¿Estás seguro de que deseas eliminar este producto del carrito?')) {
-        $.ajax({
-            url: window.location.href,
-            method: 'POST',
-            data: {
-                action: 'remove_product',
-                product_id: idProducto,
-                cart_id: idCarrito
-            },
-            success: function(response) {
-                const datos = JSON.parse(response);
-                if (datos.success) {
-                    $(`#product-${idProducto}`).fadeOut(300, function() {
+                dataType: 'json'
+            })
+            .done(function(response) {
+                if (response.success) {
+                    $(`#product-${productId}`).fadeOut(300, function() {
                         $(this).remove();
                         actualizarPrecios();
                         if ($('.product-item').length === 0) {
                             location.reload();
                         }
                     });
+                } else {
+                    alert(response.message || 'Error al eliminar el producto');
                 }
-            }
-        });
-    }
-});
+            })
+            .fail(function() {
+                alert('Error de conexión al eliminar el producto');
+            });
+        }
+    });
 
-// Actualizar precios al cargar la página
-$(document).ready(function() {
+    // Inicializar precios al cargar
     actualizarPrecios();
 });
     </script>

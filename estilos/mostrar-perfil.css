@@ -1,0 +1,236 @@
+/* Variables de colores */
+:root {
+    --color-primary: #2E7D32;      /* Verde oscuro */
+    --color-secondary: #81C784;    /* Verde claro */
+    --color-accent: #FF8F00;       /* Naranja cálido */
+    --color-background: #F1F8E9;   /* Verde muy claro para fondo */
+    --color-text: #2C3E50;         /* Azul oscuro para texto */
+    --color-gray: #95A5A6;         /* Gris para elementos secundarios */
+    --shadow-default: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos generales */
+body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Header del perfil */
+.perfil-header {
+    display: flex;
+    gap: 2rem;
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow-default);
+    margin-bottom: 2rem;
+}
+
+.perfil-imagen {
+    flex-shrink: 0;
+}
+
+.perfil-imagen img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--color-secondary);
+    box-shadow: var(--shadow-default);
+}
+
+.perfil-info {
+    flex-grow: 1;
+}
+
+.perfil-info h1 {
+    color: var(--color-primary);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.perfil-info p {
+    margin-bottom: 0.5rem;
+}
+
+/* Valoración */
+.valoracion {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+}
+
+.valoracion strong {
+    color: var(--color-primary);
+}
+
+/* Estrellas */
+.valoracion, .valoracion-producto {
+    color: var(--color-accent);
+    letter-spacing: 2px;
+}
+
+/* Sección de productos */
+.productos-top {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow-default);
+    margin-bottom: 2rem;
+}
+
+.productos-top h2 {
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-secondary);
+}
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.producto-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    transition: transform 0.2s;
+    border: 1px solid #e0e0e0;
+}
+
+.producto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.producto-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.producto-card h3 {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.producto-card .precio {
+    font-weight: bold;
+    color: var(--color-accent);
+    font-size: 1.2rem;
+}
+
+.producto-card .vendidos {
+    color: var(--color-gray);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Sección de feedback */
+.feedback-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow-default);
+}
+
+.feedback-section h2 {
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-secondary);
+}
+
+.feedback-card {
+    background: var(--color-background);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.feedback-header strong {
+    color: var(--color-primary);
+}
+
+.fecha {
+    color: var(--color-gray);
+    font-size: 0.9rem;
+}
+
+.no-feedback {
+    color: var(--color-gray);
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Botón de volver */
+.fixed {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+}
+
+.fixed a {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.fixed a:hover {
+    background-color: var(--color-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .perfil-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .perfil-imagen {
+        margin: 0 auto;
+    }
+    
+    .productos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .productos-grid {
+        grid-template-columns: 1fr;
+    }
+}
