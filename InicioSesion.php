@@ -90,23 +90,90 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div id="chatbot-icon" onclick="toggleChatbot()">💬</div>
     <div id="chatbot-window">
-        <div id="chatbot-header">Chatbot</div>
+        <div id="chatbot-header">
+            Chatbot
+            <span class="close-btn" onclick="toggleChatbot()">×</span>
+        </div>
         <div id="chatbot-messages"></div>
         <div id="chatbot-input">
-            <input type="text" placeholder="Escribe tu mensaje...">
-            <button>Enviar</button>
+            <input type="text" id="chat-input" placeholder="Escribe tu mensaje...">
+            <button onclick="sendMessage()">Enviar</button>
         </div>
     </div>
 
     <script>
-        function toggleChatbot() {
-            const chatbotWindow = document.getElementById('chatbot-window');
-            if (chatbotWindow.style.display === 'none' || chatbotWindow.style.display === '') {
-                chatbotWindow.style.display = 'block';
-            } else {
-                chatbotWindow.style.display = 'none';
-            }
+        let conversationId = null;
+
+function toggleChatbot() {
+    const chatbotWindow = document.getElementById('chatbot-window');
+    if (chatbotWindow.style.display === 'none' || chatbotWindow.style.display === '') {
+        chatbotWindow.style.display = 'block';
+        if (!conversationId) {
+            startConversation();
         }
+    } else {
+        chatbotWindow.style.display = 'none';
+    }
+}
+
+function startConversation() {
+    fetch('chatbot_process.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=start_conversation'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            conversationId = data.conversationId;
+            appendMessage("¡Hola! ¿En qué puedo ayudarte?", true);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (message && conversationId) {
+        appendMessage(message, false);
+        input.value = '';
+        
+        fetch('chatbot_process.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=send_message&message=${encodeURIComponent(message)}&conversationId=${conversationId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                appendMessage(data.reply, true);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+
+function appendMessage(message, isBot) {
+    const messagesDiv = document.getElementById('chatbot-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = isBot ? 'bot-message' : 'user-message';
+    messageDiv.textContent = message;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Allow sending messages with Enter key
+document.getElementById('chat-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
     </script>
 </body>
 </html>
