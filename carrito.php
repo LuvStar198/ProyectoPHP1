@@ -195,6 +195,77 @@ class CartHandler {
             ];
         }
     }
+
+    public function removeProduct($product_id, $cart_id) {
+        try {
+            // Verificar que el carrito pertenece al usuario
+            $check_cart = "SELECT ID_Carrito FROM Carrito WHERE ID_Carrito = ? AND ID_Usuario = ?";
+            $stmt_cart = $this->conn->prepare($check_cart);
+            $stmt_cart->bind_param("ii", $cart_id, $this->user_id);
+            $stmt_cart->execute();
+            $result_cart = $stmt_cart->get_result();
+            
+            if ($result_cart->num_rows === 0) {
+                throw new Exception("Carrito no válido");
+            }
+
+            // Iniciar transacción
+            $this->conn->begin_transaction();
+
+            try {
+                // Eliminar el producto del carrito
+                $delete_product = "DELETE FROM Carrito_Producto 
+                                 WHERE ID_Carrito = ? AND ID_Producto = ?";
+                
+                $stmt_delete = $this->conn->prepare($delete_product);
+                if (!$stmt_delete) {
+                    throw new Exception("Error en la preparación de la consulta: " . $this->conn->error);
+                }
+
+                $stmt_delete->bind_param("ii", $cart_id, $product_id);
+                
+                if (!$stmt_delete->execute()) {
+                    throw new Exception("Error al eliminar el producto del carrito");
+                }
+
+                // Actualizar fecha_modificacion en la tabla Carrito
+                $update_cart = "UPDATE Carrito 
+                              SET fecha_modificacion = NOW() 
+                              WHERE ID_Carrito = ?";
+                
+                $stmt_cart = $this->conn->prepare($update_cart);
+                if (!$stmt_cart) {
+                    throw new Exception("Error en la preparación de la consulta del carrito");
+                }
+
+                $stmt_cart->bind_param("i", $cart_id);
+                
+                if (!$stmt_cart->execute()) {
+                    throw new Exception("Error al actualizar la fecha del carrito");
+                }
+
+                // Confirmar transacción
+                $this->conn->commit();
+
+                return [
+                    'success' => true,
+                    'message' => 'Producto eliminado correctamente'
+                ];
+
+            } catch (Exception $e) {
+                // Revertir transacción en caso de error
+                $this->conn->rollback();
+                throw $e;
+            }
+
+        } catch (Exception $e) {
+            error_log("Error en CartHandler::removeProduct: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 }
 
 
@@ -204,29 +275,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
     
     try {
-        if ($_POST['action'] === 'update_quantity') {
-            if (!isset($_POST['product_id'], $_POST['quantity'], $_POST['cart_id'])) {
-                throw new Exception('Faltan parámetros necesarios');
-            }
-            
-            $product_id = filter_var($_POST['product_id'], FILTER_VALIDATE_INT);
-            $quantity = filter_var($_POST['quantity'], FILTER_VALIDATE_INT);
-            $cart_id = filter_var($_POST['cart_id'], FILTER_VALIDATE_INT);
-            
-            if ($product_id === false || $quantity === false || $cart_id === false) {
-                throw new Exception('Parámetros inválidos');
-            }
-            
-            if ($quantity < 1) {
-                throw new Exception('La cantidad debe ser mayor a 0');
-            }
-            
-            $cartHandler = new CartHandler($conn, $user_id);
-            $result = $cartHandler->updateProductQuantity($product_id, $quantity, $cart_id);
-            
-            echo json_encode($result);
-            exit;
+        $cartHandler = new CartHandler($conn, $user_id);
+
+        switch ($_POST['action']) {
+            case 'update_quantity':
+                if (!isset($_POST['product_id'], $_POST['quantity'], $_POST['cart_id'])) {
+                    throw new Exception('Faltan parámetros necesarios');
+                }
+                
+                $product_id = filter_var($_POST['product_id'], FILTER_VALIDATE_INT);
+                $quantity = filter_var($_POST['quantity'], FILTER_VALIDATE_INT);
+                $cart_id = filter_var($_POST['cart_id'], FILTER_VALIDATE_INT);
+                
+                if ($product_id === false || $quantity === false || $cart_id === false) {
+                    throw new Exception('Parámetros inválidos');
+                }
+                
+                if ($quantity < 1) {
+                    throw new Exception('La cantidad debe ser mayor a 0');
+                }
+                
+                $result = $cartHandler->updateProductQuantity($product_id, $quantity, $cart_id);
+                break;
+
+            case 'remove_product':
+                if (!isset($_POST['product_id'], $_POST['cart_id'])) {
+                    throw new Exception('Faltan parámetros necesarios');
+                }
+                
+                $product_id = filter_var($_POST['product_id'], FILTER_VALIDATE_INT);
+                $cart_id = filter_var($_POST['cart_id'], FILTER_VALIDATE_INT);
+                
+                if ($product_id === false || $cart_id === false) {
+                    throw new Exception('Parámetros inválidos');
+                }
+                
+                $result = $cartHandler->removeProduct($product_id, $cart_id);
+                break;
+
+            default:
+                throw new Exception('Acción no válida');
         }
+        
+        echo json_encode($result);
+        exit;
+
     } catch (Exception $e) {
         error_log("Error en el procesamiento AJAX: " . $e->getMessage());
         echo json_encode([
